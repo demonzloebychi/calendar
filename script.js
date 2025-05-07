@@ -2,7 +2,6 @@
 const holidays = [
   '2025-05-01',
   '2025-05-02',
-  '2025-05-08',
   '2025-05-09',
   // Добавьте свои даты
 ];
@@ -14,9 +13,7 @@ const specialDays = [
 ];
 
 const dateLinks = {
-  '2025-05-06': ['2025-05-12', '2025-05-13'],
-  '2025-05-07': ['2025-05-16', '2025-05-17'],
-
+  // '2025-05-06': ['2025-05-12', '2025-05-13'],
   // Добавьте свои связи
 };
 
@@ -86,10 +83,9 @@ function generateCalendar(year, month) {
   let startDay = (firstDay.getDay() + 6) % 7; // Приводим к понедельнику
   let daysInPrevMonth = new Date(year, month, 0).getDate();
 
-  let todayStr = formatDate(new Date());
-
-  // Получаем связанные даты для сегодняшней даты
-  const linkedDatesForToday = new Set(dateLinks[todayStr] || []);
+  let today = new Date();
+  today.setHours(0, 0, 0, 0); // обнуляем время для корректного сравнения
+  let todayStr = formatDate(today);
 
   let days = [];
   // Заполнение предыдущими днями
@@ -114,6 +110,12 @@ function generateCalendar(year, month) {
     });
   }
 
+  // Собираем все связанные даты из dateLinks для подсветки сразу
+  const allLinkedDates = new Set();
+  Object.values(dateLinks).forEach(arr => {
+    arr.forEach(dateStr => allLinkedDates.add(dateStr));
+  });
+
   // Рисуем строки
   for (let i = 0; i < days.length; i += 7) {
     let tr = document.createElement('tr');
@@ -123,8 +125,15 @@ function generateCalendar(year, month) {
       let dateStr = formatDate(dayObj.date);
       td.textContent = dayObj.date.getDate();
 
-      // Выходные (Сб=5, Вс=6)
-      if (j >= 5) td.classList.add('weekend');
+      // Выходные (Сб=5, Вс=6) всегда красные
+      if (j >= 5) {
+        td.classList.add('weekend');
+      } else {
+        // Если день прошёл (меньше сегодняшнего) - красный
+        if (dayObj.date < today) {
+          td.classList.add('weekend');
+        }
+      }
 
       // Праздники
       if (holidays.includes(dateStr)) td.classList.add('holiday');
@@ -138,8 +147,8 @@ function generateCalendar(year, month) {
       // Другой месяц
       if (dayObj.otherMonth) td.classList.add('other-month');
 
-      // Подсветка связанных дней только для сегодняшней даты
-      if (linkedDatesForToday.has(dateStr)) td.classList.add('linked-day');
+      // Подсветка связанных дней сразу
+      if (allLinkedDates.has(dateStr)) td.classList.add('linked-day');
 
       // Для связи дат
       td.dataset.date = dateStr;
@@ -166,7 +175,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let clickedDate = e.target.dataset.date;
     // Сбросить подсветку linked-day
-    // currentTable.querySelectorAll('.linked-day').forEach(td => td.classList.remove('linked-day'));
+    currentTable.querySelectorAll('.linked-day').forEach(td => td.classList.remove('linked-day'));
 
     if (dateLinks[clickedDate]) {
       dateLinks[clickedDate].forEach(linked => {
