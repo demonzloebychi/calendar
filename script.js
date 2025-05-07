@@ -1,24 +1,32 @@
-// Настройте праздники и связи
+// Статические праздники (формат YYYY-MM-DD)
 const holidays = [
   '2025-05-01',
   '2025-05-02',
+  '2025-05-08',
   '2025-05-09',
   // Добавьте свои даты
 ];
 
+// Динамические смещения для праздников (через сколько дней после сегодня подсвечивать)
+const holidayOffsets = [6, 10, 16, 20, 21];
+
+// Статические специальные дни (формат YYYY-MM-DD)
 const specialDays = [
-  '2025-05-12',
-  '2025-05-19',
+  // '2025-05-12',
+  // '2025-05-19',
   // Добавьте свои даты
 ];
 
+// Динамические offset’ы для специальных дней (число дней после сегодня)
+const specialDayOffsets = [7, 9, 14, 17, 23, 28];
+
+// Связанные даты
 const dateLinks = {
   // '2025-05-06': ['2025-05-12', '2025-05-13'],
   // Добавьте свои связи
 };
 
-// Определяет, когда показывать следующий месяц
-const SWITCH_DAY = 28; // Например, с 28 числа показываем следующий месяц
+const SWITCH_DAY = 28; // переключение месяца
 
 function pad(n) {
   return n < 10 ? '0' + n : n;
@@ -31,7 +39,6 @@ function formatDate(date) {
 function getMonthToShow() {
   const today = new Date();
   if (today.getDate() >= SWITCH_DAY) {
-    // Показать следующий месяц
     let nextMonth = today.getMonth() + 1;
     let year = today.getFullYear();
     if (nextMonth > 11) {
@@ -58,12 +65,10 @@ function generateCalendar(year, month) {
   const table = document.createElement('table');
   table.className = 'calendar-table';
 
-  // Заголовок месяца
   const caption = document.createElement('caption');
   caption.textContent = `${monthNames[month]} ${year}`;
   table.appendChild(caption);
 
-  // Заголовки дней недели
   let thead = document.createElement('thead');
   let tr = document.createElement('tr');
   weekDays.forEach(day => {
@@ -74,35 +79,48 @@ function generateCalendar(year, month) {
   thead.appendChild(tr);
   table.appendChild(thead);
 
-  // Даты
   let tbody = document.createElement('tbody');
   let firstDay = new Date(year, month, 1);
   let lastDay = new Date(year, month + 1, 0);
 
-  // День недели первого дня месяца (0 - Воскресенье, 1 - Понедельник, ...)
-  let startDay = (firstDay.getDay() + 6) % 7; // Приводим к понедельнику
+  let startDay = (firstDay.getDay() + 6) % 7;
   let daysInPrevMonth = new Date(year, month, 0).getDate();
 
   let today = new Date();
-  today.setHours(0, 0, 0, 0); // обнуляем время для корректного сравнения
+  //new Date(new Date().setDate(new Date().getDate() + 1));
+  today.setHours(0, 0, 0, 0);
   let todayStr = formatDate(today);
 
+  // Вычисляем динамические праздники
+  const dynamicHolidaysSet = new Set();
+  holidayOffsets.forEach(offset => {
+    let holidayDate = new Date(today);
+    holidayDate.setDate(holidayDate.getDate() + offset);
+    dynamicHolidaysSet.add(formatDate(holidayDate));
+  });
+
+  // Вычисляем динамические специальные дни
+  const dynamicSpecialDaysSet = new Set();
+  specialDayOffsets.forEach(offset => {
+    let specialDate = new Date(today);
+    specialDate.setDate(specialDate.getDate() + offset);
+    dynamicSpecialDaysSet.add(formatDate(specialDate));
+  });
+
+  // Создаём массив дней для отображения
   let days = [];
-  // Заполнение предыдущими днями
   for (let i = 0; i < startDay; i++) {
     days.push({
       date: new Date(year, month - 1, daysInPrevMonth - startDay + i + 1),
       otherMonth: true
     });
   }
-  // Текущий месяц
   for (let d = 1; d <= lastDay.getDate(); d++) {
     days.push({
       date: new Date(year, month, d),
       otherMonth: false
     });
   }
-  // Следующий месяц (до конца строки)
   while (days.length % 7 !== 0) {
     days.push({
       date: new Date(year, month + 1, days.length - (startDay + lastDay.getDate()) + 1),
@@ -110,13 +128,12 @@ function generateCalendar(year, month) {
     });
   }
 
-  // Собираем все связанные даты из dateLinks для подсветки сразу
+  // Все связанные даты
   const allLinkedDates = new Set();
   Object.values(dateLinks).forEach(arr => {
     arr.forEach(dateStr => allLinkedDates.add(dateStr));
   });
 
-  // Рисуем строки
   for (let i = 0; i < days.length; i += 7) {
     let tr = document.createElement('tr');
     for (let j = 0; j < 7; j++) {
@@ -125,21 +142,29 @@ function generateCalendar(year, month) {
       let dateStr = formatDate(dayObj.date);
       td.textContent = dayObj.date.getDate();
 
-      // Выходные (Сб=5, Вс=6) всегда красные
-      if (j >= 5) {
-        td.classList.add('weekend');
-      } else {
-        // Если день прошёл (меньше сегодняшнего) - красный
-        if (dayObj.date < today) {
+        // Выходные (Сб, Вс) красные
+        if (j >= 5) {
           td.classList.add('weekend');
+        } else {
+          // Прошедшие дни (кроме выходных) красные
+          if (dayObj.date < today) {
+            td.classList.add('weekend');
+          }
         }
+      
+      // Специальные дни - статические или динамические
+      if (specialDays.includes(dateStr) || dynamicSpecialDaysSet.has(dateStr)) {
+        td.classList.add('special-day');
       }
 
-      // Праздники
-      if (holidays.includes(dateStr)) td.classList.add('holiday');
+      // Праздники - статические или динамические
+      if (holidays.includes(dateStr) || dynamicHolidaysSet.has(dateStr)) {
+        td.classList.add('holiday');
+      }
 
-      // Специальные дни
-      if (specialDays.includes(dateStr)) td.classList.add('special-day');
+    
+
+
 
       // Сегодня
       if (dateStr === todayStr && !dayObj.otherMonth) td.classList.add('today');
@@ -147,10 +172,9 @@ function generateCalendar(year, month) {
       // Другой месяц
       if (dayObj.otherMonth) td.classList.add('other-month');
 
-      // Подсветка связанных дней сразу
+      // Связанные дни
       if (allLinkedDates.has(dateStr)) td.classList.add('linked-day');
 
-      // Для связи дат
       td.dataset.date = dateStr;
 
       tr.appendChild(td);
@@ -164,7 +188,6 @@ function generateCalendar(year, month) {
   currentTable = table;
 }
 
-// Навешиваем обработчик клика один раз, используя делегирование
 document.addEventListener('DOMContentLoaded', () => {
   const { year, month } = getMonthToShow();
   generateCalendar(year, month);
@@ -174,7 +197,6 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!currentTable) return;
 
     let clickedDate = e.target.dataset.date;
-    // Сбросить подсветку linked-day
     currentTable.querySelectorAll('.linked-day').forEach(td => td.classList.remove('linked-day'));
 
     if (dateLinks[clickedDate]) {
