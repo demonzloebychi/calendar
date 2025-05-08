@@ -1,4 +1,10 @@
-// Статические праздники (формат YYYY-MM-DD)
+<div class="body__calendar">
+    <div id="calendar"></div>
+</div>
+
+
+<script>
+    // Статические праздники (формат YYYY-MM-DD)
 const holidays = [
   '2025-05-01',
   '2025-05-02',
@@ -216,3 +222,78 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 });
+
+</script>
+
+
+
+
+<style>
+    #calendar {
+    width: 350px;
+    margin: 30px auto;
+    font-family: Arial, sans-serif;
+  }
+  
+  .calendar-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  
+  .calendar-table th, .calendar-table td {
+    width: 14.28%;
+    height: 40px;
+    text-align: center;
+    border: 1px solid #e0e0e0;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  
+  .calendar-table th {
+    background: #f0f0f0;
+  }
+
+  .calendar-table td {
+    background: #d8ffd8;
+
+  }
+  
+  .calendar-table caption {
+    margin-bottom: 20px;
+  }
+
+
+
+
+
+  /* Добавляем новый класс */
+  .special-day {
+    background: #fff3cd !important;
+ 
+  }
+  
+  .holiday {
+    background: #ffd8d8 !important;
+
+  }
+
+  .weekend {
+    background: #ffd8d8 !important;
+  }
+  
+  
+  .linked-day {
+    border: 2px solid #4747ff !important;
+ 
+  }
+  
+  .other-month {
+    color: #aaa;
+    background: #fafafa;
+  }
+  
+  .today {
+    border: 2px solid #007bff;
+  }
+  
+</style>
