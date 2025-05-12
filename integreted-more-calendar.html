@@ -1,0 +1,304 @@
+<div class="body__calendar">
+    <div class="calendar__block">
+        <h2>Испания</h2>
+        <div id="calendar"></div>
+    </div>
+    <div class="calendar__block">
+        <h2>Франция</h2>
+        <div id="calendar-2"></div>
+    </div>
+    <div class="calendar__block">
+        <h2>Италия</h2>
+        <div id="calendar-3"></div>
+    </div>
+</div>
+
+<script>
+  // Конфигурации для каждого календаря
+  const calendarsConfig = {
+    'calendar': {
+      holidays: ['2025-05-01', '2025-05-02', '2025-05-08', '2025-05-09'],
+      holidayOffsets: [0, 1, 2, 6, 10, 16, 20, 21],
+      specialDays: [],
+      specialDayOffsets: [7, 9, 14, 17, 23, 28],
+      dateLinks: {}
+    },
+    'calendar-2': {
+      holidays: ['2025-06-01', '2025-06-12'],
+      holidayOffsets: [0, 3, 5],
+      specialDays: ['2025-06-15'],
+      specialDayOffsets: [2, 4, 9],
+      dateLinks: {}
+    },
+    'calendar-3': {
+      holidays: ['2025-06-02', '2025-06-12'],
+      holidayOffsets: [0, 3, 5],
+      specialDays: ['2025-06-15'],
+      specialDayOffsets: [2, 4, 9],
+      dateLinks: {}
+    },
+  };
+
+  const SWITCH_DAY = 28; // переключение месяца
+  const currentTables = {}; // хранит таблицы календарей
+
+  function pad(n) {
+    return n < 10 ? '0' + n : n;
+  }
+
+  function formatDate(date) {
+    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+  }
+
+  function getMonthToShow() {
+    const today = new Date();
+    if (today.getDate() >= SWITCH_DAY) {
+      let nextMonth = today.getMonth() + 1;
+      let year = today.getFullYear();
+      if (nextMonth > 11) {
+        nextMonth = 0;
+        year++;
+      }
+      return { year, month: nextMonth };
+    }
+    return { year: today.getFullYear(), month: today.getMonth() };
+  }
+
+  function generateCalendar(id, year, month, config) {
+    const calendarDiv = document.getElementById(id);
+    calendarDiv.innerHTML = '';
+
+    const monthNames = [
+      'Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь',
+      'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'
+    ];
+    const weekDays = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
+
+    const table = document.createElement('table');
+    table.className = 'calendar-table';
+
+    const caption = document.createElement('caption');
+    caption.textContent = `${monthNames[month]} ${year}`;
+    table.appendChild(caption);
+
+    const thead = document.createElement('thead');
+    const trHead = document.createElement('tr');
+    weekDays.forEach(day => {
+      const th = document.createElement('th');
+      th.textContent = day;
+      trHead.appendChild(th);
+    });
+    thead.appendChild(trHead);
+    table.appendChild(thead);
+
+    const tbody = document.createElement('tbody');
+    const firstDay = new Date(year, month, 1);
+    const lastDay = new Date(year, month + 1, 0);
+
+    const startDay = (firstDay.getDay() + 6) % 7; // сдвигаем, чтобы понедельник = 0
+    const daysInPrevMonth = new Date(year, month, 0).getDate();
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const todayStr = formatDate(today);
+
+    // Динамические праздники
+    const dynamicHolidaysSet = new Set();
+    config.holidayOffsets.forEach(offset => {
+      const holidayDate = new Date(today);
+      holidayDate.setDate(holidayDate.getDate() + offset);
+      dynamicHolidaysSet.add(formatDate(holidayDate));
+    });
+
+    // Динамические специальные дни
+    const dynamicSpecialDaysSet = new Set();
+    config.specialDayOffsets.forEach(offset => {
+      const specialDate = new Date(today);
+      specialDate.setDate(specialDate.getDate() + offset);
+      dynamicSpecialDaysSet.add(formatDate(specialDate));
+    });
+
+    // Если сегодня пятница, подсвечиваем понедельник после неё
+    const mondaysToHighlight = new Set();
+    if (today.getDay() === 5) { // пятница
+      const monday = new Date(today);
+      monday.setDate(monday.getDate() + 3);
+      mondaysToHighlight.add(formatDate(monday));
+    }
+
+    // Массив дней для отображения
+    const days = [];
+    for (let i = 0; i < startDay; i++) {
+      days.push({
+        date: new Date(year, month - 1, daysInPrevMonth - startDay + i + 1),
+        otherMonth: true
+      });
+    }
+    for (let d = 1; d <= lastDay.getDate(); d++) {
+      days.push({
+        date: new Date(year, month, d),
+        otherMonth: false
+      });
+    }
+    while (days.length % 7 !== 0) {
+      days.push({
+        date: new Date(year, month + 1, days.length - (startDay + lastDay.getDate()) + 1),
+        otherMonth: true
+      });
+    }
+
+    // Все связанные даты
+    const allLinkedDates = new Set();
+    Object.values(config.dateLinks).forEach(arr => {
+      arr.forEach(dateStr => allLinkedDates.add(dateStr));
+    });
+
+    for (let i = 0; i < days.length; i += 7) {
+      const tr = document.createElement('tr');
+      for (let j = 0; j < 7; j++) {
+        const dayObj = days[i + j];
+        const td = document.createElement('td');
+        const dateStr = formatDate(dayObj.date);
+        td.textContent = dayObj.date.getDate();
+
+        // Выходные (Сб, Вс)
+        if (j >= 5) {
+          td.classList.add('weekend');
+        } else {
+          // Прошедшие дни (кроме выходных)
+          if (dayObj.date < today) {
+            td.classList.add('weekend');
+          }
+        }
+
+        // Специальные дни
+        if (config.specialDays.includes(dateStr) || dynamicSpecialDaysSet.has(dateStr)) {
+          td.classList.add('special-day');
+        }
+
+        // Праздники
+        if (config.holidays.includes(dateStr) || dynamicHolidaysSet.has(dateStr)) {
+          td.classList.add('holiday');
+        }
+
+        // Подсветка понедельника после пятницы
+        if (mondaysToHighlight.has(dateStr)) {
+          td.classList.add('holiday');
+        }
+
+        // Сегодня
+        if (dateStr === todayStr && !dayObj.otherMonth) td.classList.add('today');
+
+        // Другой месяц
+        if (dayObj.otherMonth) td.classList.add('other-month');
+
+        // Связанные дни
+        if (allLinkedDates.has(dateStr)) td.classList.add('linked-day');
+
+        td.dataset.date = dateStr;
+
+        tr.appendChild(td);
+      }
+      tbody.appendChild(tr);
+    }
+
+    table.appendChild(tbody);
+    calendarDiv.appendChild(table);
+
+    currentTables[id] = table;
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    const { year, month } = getMonthToShow();
+
+    Object.entries(calendarsConfig).forEach(([id, config]) => {
+      generateCalendar(id, year, month, config);
+
+      document.getElementById(id).addEventListener('click', function (e) {
+        if (e.target.tagName !== 'TD') return;
+        const clickedDate = e.target.dataset.date;
+        const table = currentTables[id];
+        table.querySelectorAll('.linked-day').forEach(td => td.classList.remove('linked-day'));
+
+        if (config.dateLinks[clickedDate]) {
+          config.dateLinks[clickedDate].forEach(linked => {
+            const linkedTd = table.querySelector(`td[data-date="${linked}"]`);
+            if (linkedTd) linkedTd.classList.add('linked-day');
+          });
+        }
+      });
+    });
+  });
+</script>
+
+<style>
+  #calendar, #calendar-2, #calendar-3, #calendar-4 {
+    width: 350px;
+    margin: 30px auto;
+    font-family: Arial, sans-serif;
+  }
+  
+  .calendar-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  
+  .calendar-table th, .calendar-table td {
+    width: 14.28%;
+    height: 40px;
+    text-align: center;
+    cursor: default;
+    border: 1px solid #e0e0e0;
+    transition: background 0.2s;
+  }
+  
+  .calendar-table th {
+    background: #f0f0f0;
+  }
+
+  .calendar-table td {
+    background: #d8ffd8;
+  }
+  
+  .calendar-table caption {
+    margin-bottom: 20px;
+  }
+
+  .special-day {
+    background: #fff3cd !important;
+  }
+  
+  .holiday {
+    background: #ffd8d8 !important;
+  }
+
+  .weekend {
+    background: #ffd8d8 !important;
+  }
+  
+  .linked-day {
+    border: 2px solid #4747ff !important;
+  }
+  
+  .other-month {
+    color: #aaa;
+    background: #fafafa;
+  }
+  
+  .today {
+    border: 2px solid #007bff;
+  }
+
+  .body__calendar {
+    display: flex;
+    gap: 30px;
+    justify-content: center;
+  }
+  .calendar__block h2{
+    color: #36ae74;
+    text-align: center;
+    font-family: 'Montserrat', Arial, sans-serif;  
+}
+
+      
+</style>
