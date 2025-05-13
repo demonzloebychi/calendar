@@ -234,7 +234,7 @@
 <style>
   #calendar, #calendar-2, #calendar-3, #calendar-4 {
     width: 350px;
-    margin: 30px auto;
+    margin: 15px auto;
     font-family: Arial, sans-serif;
   }
   
@@ -291,13 +291,20 @@
 
   .body__calendar {
     display: flex;
-    gap: 30px;
+    gap: clamp(15px, 2vw, 30px);
     justify-content: center;
+    flex-wrap: wrap;
   }
   .calendar__block h2{
     color: #36ae74;
     text-align: center;
     font-family: 'Montserrat', Arial, sans-serif;  
+}
+
+@media (max-width:375px) {
+    .body__calendar {
+        scale: 0.8;
+      }
 }
 
       

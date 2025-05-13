@@ -70,3 +70,38 @@
   .dates{
     
   }
+
+
+.calendar__info p{
+  margin-left: 30%;
+  position: relative;
+  padding-left: 30px;
+ 
+}
+  .calendar__info p:nth-child(1):before{
+     content: "";
+    top: 0;
+    left: 0px;
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    background-color: #d8ffd8;
+  }
+  .calendar__info p:nth-child(2):before{
+     content: "";
+    top: 0;
+    left: 0;
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    background-color: #ffd8d8;
+  }
+  .calendar__info p:nth-child(3):before{
+     content: "";
+    top: 0;
+    left: 0;
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    background-color: #fff3cd;
+  }
