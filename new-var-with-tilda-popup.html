@@ -13,62 +13,16 @@
     </div>
 </div>
 
+<a href="#popup:popup-holiday" style="display:none;" id="open-popup-holiday"></a>
+<a href="#popup:popup-special" style="display:none;" id="open-popup-special"></a>
+<a href="#popup:popup-green" style="display:none;" id="open-popup-green"></a>
+
 
   <div class="calendar__info">
     <p> - есть свободные места на запись в ВЦ, больше 7 мест</p>
     <p> - выходной или нет мест на запись</p>
     <p> - есть 2-3 свободных места на запись в ВЦ</p>
   </div>
-
-
-<!-- Попап для красных дней -->
-<div id="popup-holiday" class="calendar-popup">
-  <div class="calendar-popup__content">
-    <span class="calendar-popup__close" onclick="closePopup('popup-holiday')">&times;</span>
-    <div class="calendar-popup__text">
-      <div>Нет мест для записи!</div>
-      <p>Выберите другую дату</p>
-        
-    </div>
-    
-  </div>
-</div>
-<!-- Попап для жёлтых дней -->
-<div id="popup-special" class="calendar-popup">
-  <div class="calendar-popup__content">
-    <span class="calendar-popup__close" onclick="closePopup('popup-special')">&times;</span>
-    <div class="calendar-popup__text">
-      <div>Осталось менее 4-х мест для записи</div>
-    </div>
-    <form action="" class="calendar-form">
-      <input type="phone" class="input phone" placeholder="Ваш номер телефона" maxlength="18">
-      <input type="number" class="input" maxlength="2" placeholder="Введите кол-во людей">
-      <button class="calendar-form__submit">Записаться</button>
-    </form>
-  </div>
-</div>
-<!-- Попап для зелёных дней -->
-<div id="popup-green" class="calendar-popup">
-  <div class="calendar-popup__content">
-    <span class="calendar-popup__close" onclick="closePopup('popup-green')">&times;</span>
-    <div class="calendar-popup__text">
-      <div>Осталось более 5-ти мест для записи</div>
-    </div>
-    <form action="" class="calendar-form">
-      <input type="phone" class="input phone" placeholder="Ваш номер телефона" maxlength="18">
-
-      <div>
-        <button id="decrease">-</button>
-        <input type="text" id="counter" value="1" readonly style="width: 30px; text-align: center;" />
-        <button id="increase">+</button>
-      </div>
-
-      <button class="calendar-form__submit">Записаться</button>
-    </form>
-  </div>
-</div>
-
-
 
 
 
@@ -288,21 +242,19 @@ function openTildaPopupByHook(hook) {
 
       document.getElementById(id).addEventListener('click', function (e) {
 
-        
-        if (e.target.tagName !== 'TD') return;
-        const clickedDate = e.target.dataset.date;
-        const td = e.target;
+         if (e.target.tagName !== 'TD') return;
+          const td = e.target;
 
-        // Определяем тип дня по классам
-        if (td.classList.contains('holiday')) {
-          openPopup('popup-holiday');
-        } else if (td.classList.contains('weekend')) {
-          openPopup('popup-holiday');
-        } else if (td.classList.contains('special-day')) {
-          openPopup('popup-special');
-        } else if (!td.classList.contains('other-month')) {
-          openPopup('popup-green');
-        }
+          if (td.classList.contains('special-day')) {
+            openTildaPopupByHook('#popup:popup-special');
+          } else if (td.classList.contains('weekend')) {
+            openTildaPopupByHook('#popup:popup-holiday');
+          } else if (td.classList.contains('holiday')) {
+            openTildaPopupByHook('#popup:popup-holiday');
+          } else if (!td.classList.contains('other-month')) {
+            openTildaPopupByHook('#popup:popup-green');
+          }
+
 
         // Ваша логика для связанных дней (если нужна)
         const table = currentTables[id];
@@ -322,82 +274,7 @@ function openTildaPopupByHook(hook) {
 
 
 
-function openPopup(popupId) {
-  document.getElementById(popupId).classList.add('active');
-}
-function closePopup(popupId) {
-  document.getElementById(popupId).classList.remove('active');
-}
-// Чтобы закрывать попап по клику вне окна:
-document.querySelectorAll('.calendar-popup').forEach(popup => {
-  popup.addEventListener('click', function(e) {
-    if (e.target === popup) popup.classList.remove('active');
-  });
-});
 
-
-
- // Получаем все элементы с классом 'phones'
-  const phoneInputs = document.querySelectorAll('.phone');
-
-  // Для каждого элемента добавляем обработчик события keydown
-  phoneInputs.forEach(phoneInput => {
-    phoneInput.addEventListener('keydown', function(e) {
-      inputphone(e, this); // Используем 'this' для передачи текущего элемента
-    });
-  });
-
-  // Функция маски для телефона
-  function inputphone(e, phone) {
-    function stop(evt) {
-      evt.preventDefault();
-    }
-
-    let key = e.key,
-      v = phone.value;
-    not = key.replace(/([0-9])/, 1);
-
-    if (not == 1 || 'Backspace' === not) {
-      if ('Backspace' != not) {
-        if (v.length < 3 || v === '') {
-          phone.value = '+7 (';
-        }
-        if (v.length === 7) {
-          phone.value = v + ') ';
-        }
-        if (v.length === 12) {
-          phone.value = v + '-';
-        }
-        if (v.length === 15) {
-          phone.value = v + '-';
-        }
-      }
-    } else {
-      stop(e);
-    }
-  }
-
-
-
-const counterInput = document.getElementById('counter');
-  const decreaseBtn = document.getElementById('decrease');
-  const increaseBtn = document.getElementById('increase');
-
-  decreaseBtn.onclick = function(event) {
-  event.preventDefault(); // Отменяем действие по умолчанию (например, отправку формы)
-  let currentValue = parseInt(counterInput.value);
-  if (currentValue > 1) {
-    counterInput.value = currentValue - 1;
-  }
-};
-
-increaseBtn.onclick = function(event) {
-  event.preventDefault();
-  let currentValue = parseInt(counterInput.value);
-  if (currentValue < 99) {
-    counterInput.value = currentValue + 1;
-  }
-};
 
 
 </script>

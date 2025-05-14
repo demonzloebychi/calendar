@@ -13,7 +13,7 @@
     width: 14.28%;
     height: 40px;
     text-align: center;
-    cursor: default;
+    cursor: pointer;
     border: 1px solid #e0e0e0;
     transition: background 0.2s;
   }
