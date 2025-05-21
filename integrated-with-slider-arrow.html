@@ -355,7 +355,7 @@
 
 <style>
 
-    .calendar-slider-controls {
+.calendar-slider-controls {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -363,8 +363,8 @@
 }
 
 .calendar-arrow {
-  background: #36ae74;
-  color: #fff;
+  background: #fff;
+  color: #000;
   border: none;
   border-radius: 50%;
   width: 32px;
@@ -376,8 +376,11 @@
   justify-content: center;
   transition: background 0.2s;
 }
+.calendar-arrow:hover {
+  background: #36ae74;
+}
 .calendar-arrow:active {
-  background: #218c5e;
+  background: #36ae74;
 }
 
 .calendar-multi {
