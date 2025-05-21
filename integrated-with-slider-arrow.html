@@ -1,29 +1,48 @@
 <div class="body__calendar">
+
     <div class="calendar__block">
-        <h2>Испания</h2>
+      <h2>Испания</h2>
+      <div class="calendar-slider-controls">
+        <button class="calendar-arrow left" data-country="1">&#8592;</button>
         <div class="calendar-multi" id="calendar-multi-1">
             <div class="calendar-single" id="calendar-1-0"></div>
             <div class="calendar-single" id="calendar-1-1"></div>
             <div class="calendar-single" id="calendar-1-2"></div>
         </div>
+        <button class="calendar-arrow right" data-country="1">&#8594;</button>
+      </div>
     </div>
 
     <div class="calendar__block">
         <h2>Франция</h2>
-        <div class="calendar-multi" id="calendar-multi-2">
-            <div class="calendar-single" id="calendar-2-0"></div>
-            <div class="calendar-single" id="calendar-2-1"></div>
-            <div class="calendar-single" id="calendar-2-2"></div>
-        </div>
+        <div class="calendar-slider-controls">
+            <button class="calendar-arrow left" data-country="2">&#8592;</button>
+            <div class="calendar-multi" id="calendar-multi-2">
+                <div class="calendar-single" id="calendar-2-0"></div>
+                <div class="calendar-single" id="calendar-2-1"></div>
+                <div class="calendar-single" id="calendar-2-2"></div>
+            </div>
+            <button class="calendar-arrow right" data-country="2">&#8594;</button>
+      </div>
     </div>
+
     <div class="calendar__block">
-        <h2>Италия</h2>
-        <div class="calendar-multi" id="calendar-multi-3">
+      <h2>Италия</h2>
+      <div class="calendar-slider-controls">
+        <button class="calendar-arrow left" data-country="3">&#8592;</button>
+        <div class="calendar-multi" id="calendar-multi-1">
             <div class="calendar-single" id="calendar-3-0"></div>
             <div class="calendar-single" id="calendar-3-1"></div>
             <div class="calendar-single" id="calendar-3-2"></div>
         </div>
+        <button class="calendar-arrow right" data-country="3">&#8594;</button>
+      </div>
     </div>
+    
+    
+
+    
+    
 </div>
 
 <a href="#popup:popup-holiday" style="display:none;" id="open-popup-holiday"></a>
@@ -311,12 +330,72 @@
           //   });
           // }
         });
-      }
+        
+
+          // Слайдер-стрелки для календарей
+            document.querySelectorAll('.calendar-slider-controls').forEach(ctrl => {
+                const leftBtn = ctrl.querySelector('.calendar-arrow.left');
+                const rightBtn = ctrl.querySelector('.calendar-arrow.right');
+                const multi = ctrl.querySelector('.calendar-multi');
+                const single = multi.querySelector('.calendar-single');
+                const scrollStep = single ? single.offsetWidth + 16 : 366; // ширина + gap
+
+                leftBtn.addEventListener('click', () => {
+                multi.scrollBy({ left: -scrollStep, behavior: 'smooth' });
+                });
+                rightBtn.addEventListener('click', () => {
+                multi.scrollBy({ left: scrollStep, behavior: 'smooth' });
+                });
+            });
+    
+        }
     });
   });
 </script>
 
 <style>
+
+    .calendar-slider-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.calendar-arrow {
+  background: #36ae74;
+  color: #fff;
+  border: none;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  font-size: 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+}
+.calendar-arrow:active {
+  background: #218c5e;
+}
+
+.calendar-multi {
+  /* уберите скроллбар, если хотите */
+  scrollbar-width: none;
+}
+.calendar-multi::-webkit-scrollbar {
+  display: none;
+}
+
+
+
+
+
+
+
+
+/* 
   .calendar-multi::-webkit-scrollbar {
     height: 10px;
   }
@@ -326,7 +405,7 @@
   }
   .calendar-multi::-webkit-scrollbar-track {
     background-color: #f0f0f0;
-  }
+  } */
 
 
 
