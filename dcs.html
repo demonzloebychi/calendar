@@ -1,0 +1,228 @@
+<div class="body__calendar">
+    <div class="calendar__block">
+        <h2>Испания</h2>
+        <div class="calendar-multi" id="calendar-multi-4">
+            <div class="calendar-single" id="calendar-4-0"></div>
+            <div class="calendar-single" id="calendar-4-1"></div>
+            <div class="calendar-single" id="calendar-4-2"></div>
+        </div>
+    </div>
+ 
+</div>
+
+<a href="#popup:popup-holiday" style="display:none;" id="open-popup-holiday"></a>
+<a href="#popup:popup-special" style="display:none;" id="open-popup-special"></a>
+<a href="#popup:popup-green" style="display:none;" id="open-popup-green"></a>
+
+<div class="calendar__info">
+    <p> - есть свободные места на запись в ВЦ, больше 7 мест</p>
+    <p> - выходной или нет мест на запись</p>
+    <p> - есть 2-3 свободных места на запись в ВЦ</p>
+</div>
+
+
+<style>
+  .calendar-multi::-webkit-scrollbar {
+    height: 10px;
+  }
+  .calendar-multi::-webkit-scrollbar-thumb {
+    background-color: #36ae74;
+    border-radius: 3px;
+  }
+  .calendar-multi::-webkit-scrollbar-track {
+    background-color: #f0f0f0;
+  }
+
+
+
+  .calendar-multi {
+    display: flex;
+    gap: 16px;
+    width: 360px;
+    overflow-x: scroll;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: thin; /* Для Firefox */
+    -webkit-overflow-scrolling: touch; /* Для iOS */
+  }
+  .calendar-single {
+    min-width: 350px;
+    flex-shrink: 0;
+    scroll-snap-align: start;
+  }
+
+  .calendar__block h2{
+    color: #fff;
+    text-align: center;
+    font-family: 'Montserrat', Arial, sans-serif;  
+  }
+  .calendar-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  .calendar-table th, .calendar-table td {
+    width: 14.28%;
+    height: 40px;
+    text-align: center;
+    cursor: pointer;
+    border: 1px solid #e0e0e0;
+    transition: background 0.2s;
+  }
+  .calendar-table th {
+    background: #f0f0f0;
+  }
+  .calendar-table td {
+    background: #d8ffd8;
+  }
+  .calendar-table caption {
+    margin-bottom: 20px;
+    font-family: 'Montserrat', Arial, sans-serif;  
+    font-size: 12px;
+
+  }
+  .special-day {
+    background: #fff3cd !important;
+  }
+  .holiday {
+    background: #ffd8d8 !important;
+  }
+  .weekend {
+    background: #ffd8d8 !important;
+  }
+  .linked-day {
+    border: 2px solid #4747ff !important;
+  }
+  .other-month {
+    color: #aaa;
+    background: #fafafa;
+  }
+  .today {
+    border: 2px solid #007bff;
+  }
+  .body__calendar {
+    display: flex;
+    gap: clamp(15px, 2vw, 30px);
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  .calendar__info p{
+    margin-left: 30%;
+    position: relative;
+    padding-left: 30px;
+    font-family: 'Montserrat', Arial, sans-serif;  
+    font-size: 12px;
+
+  }
+  .calendar__info p:nth-child(1):before{
+    content: "";
+    top: 0;
+    left: 0px;
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    background-color: #d8ffd8;
+  }
+  .calendar__info p:nth-child(2):before{
+    content: "";
+    top: 0;
+    left: 0;
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    background-color: #ffd8d8;
+  }
+  .calendar__info p:nth-child(3):before{
+    content: "";
+    top: 0;
+    left: 0;
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    background-color: #fff3cd;
+  
+  }
+  
+ @media (max-width:639px) {
+     
+     
+     
+    .body__calendar {
+        
+        margin-left: -15px;
+        margin-top: -30px;
+        scale: 0.8;
+    }
+    
+    .calendar__info {
+            scale: 0.8;
+    display: flex
+;
+    flex-direction: column;
+    gap: 5px;
+    margin-top: -40px;
+    margin-left: -40%;
+    }
+  }
+
+
+  /* POPUPS */
+  .calendar-popup {
+    display: none;
+    position: fixed;
+    z-index: 9999;
+    left: 0; top: 0;
+    width: 100vw; height: 100vh;
+    background: rgba(0,0,0,0.3);
+    justify-content: center;
+    align-items: center;
+  }
+  .calendar-popup.active { display: flex; }
+  .calendar-popup__content {
+    background: #fff;
+    padding: 30px 40px;
+    border-radius: 10px;
+    min-width: 220px;
+    margin-inline: 20px;
+    max-width: 450px;
+    text-align: center;
+    position: relative;
+    box-shadow: 0 2px 16px rgba(0,0,0,0.13);
+  }
+  .calendar-popup__close {
+    position: absolute;
+    right: 15px; top: 10px;
+    font-size: 22px;
+    cursor: pointer;
+    color: #888;
+  }
+  .calendar-popup__text { 
+    font-family: 'Montserrat', Arial, sans-serif;  
+    div {
+      font-size: 22px; 
+      font-weight: 700;
+    }
+  }
+  .calendar-form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .input {
+    margin-top: 20px;
+    padding: 15px 10px;
+    border-radius: 5px;
+    border: 1px solid black;
+  }
+  .calendar-form__submit {
+    padding: 15px 10px;
+    border-radius: 5px;
+    border: 1px solid transparent;
+    background-color: #d8ffd8;
+    color: black;
+    cursor: pointer;
+  }
+  @media (hover: hover) {
+    .calendar-form__submit:hover {
+      border: 1px solid black;
+    }
+  }
+</style>
