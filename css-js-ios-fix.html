@@ -272,20 +272,67 @@
 
         // Слайдер-стрелки для календарей (один раз на каждый блок)
         // (Не меняем вашу логику)
-        document.querySelectorAll('.calendar-slider-controls').forEach(ctrl => {
-          const leftBtn = ctrl.querySelector('.calendar-arrow.left');
-          const rightBtn = ctrl.querySelector('.calendar-arrow.right');
-          const multi = ctrl.querySelector('.calendar-multi');
-          const single = multi.querySelector('.calendar-single');
-          const scrollStep = single ? single.offsetWidth + 16 : 366; // ширина + gap
+        document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('.calendar-slider-controls').forEach(ctrl => {
+    const leftBtn = ctrl.querySelector('.calendar-arrow.left');
+    const rightBtn = ctrl.querySelector('.calendar-arrow.right');
+    const multi = ctrl.querySelector('.calendar-multi');
+    const singles = multi.querySelectorAll('.calendar-single');
+    const slidesCount = singles.length;
 
-          leftBtn && leftBtn.addEventListener('click', () => {
-            multi.scrollBy({ left: -scrollStep, behavior: 'smooth' });
-          });
-          rightBtn && rightBtn.addEventListener('click', () => {
-            multi.scrollBy({ left: scrollStep, behavior: 'smooth' });
-          });
-        });
+    let currentIdx = 0;
+
+    function getSlideWidth() {
+      const slide = singles[0];
+      const style = window.getComputedStyle(multi);
+      const gap = parseInt(style.gap) || 0;
+      return slide.offsetWidth + gap;
+    }
+
+    function scrollToSlide(idx) {
+      const slideWidth = getSlideWidth();
+      multi.scrollTo({ left: idx * slideWidth, behavior: 'smooth' });
+      updateArrows(idx);
+    }
+
+    function updateArrows(idx) {
+      leftBtn.disabled = idx === 0;
+      rightBtn.disabled = idx === slidesCount - 1;
+    }
+
+    leftBtn.addEventListener('click', () => {
+      if (currentIdx > 0) {
+        currentIdx--;
+        scrollToSlide(currentIdx);
+      }
+    });
+
+    rightBtn.addEventListener('click', () => {
+      if (currentIdx < slidesCount - 1) {
+        currentIdx++;
+        scrollToSlide(currentIdx);
+      }
+    });
+
+    let scrollTimeout;
+    multi.addEventListener('scroll', () => {
+      clearTimeout(scrollTimeout);
+      scrollTimeout = setTimeout(() => {
+        const slideWidth = getSlideWidth();
+        const idx = Math.round(multi.scrollLeft / slideWidth);
+        if (idx !== currentIdx) {
+          currentIdx = idx;
+          scrollToSlide(currentIdx);
+        }
+        updateArrows(currentIdx);
+      }, 80);
+    });
+
+    updateArrows(currentIdx);
+  });
+});
+
+
       }
     });
   });
@@ -320,36 +367,33 @@
   background: #36ae74;
 }
 
+
+
+
 .calendar-multi {
   display: flex;
-  gap: 16px;
-  width: 360px;
-  overflow-x: hidden;         /* Запретить скролл */
-  touch-action: none;         /* Запретить тач-скролл */
-  -ms-touch-action: none;     /* Для IE/Edge */
-  user-select: none;          /* Запретить выделение */
-  -webkit-user-select: none;
-  -webkit-overflow-scrolling: auto; /* отключить плавный скролл iOS */
-  /* scrollbar-width: none; */
-  margin-bottom: 5px;
-}
-
-
-.calendar-multi {
-  -ms-overflow-style: none;  /* IE и Edge */
-  scrollbar-width: none;  /* Firefox */
-
+  gap: 16px; /* если у вас другой gap, подставьте свой */
+  width: 360px; /* ширина видимой области слайдера */
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch; /* плавная прокрутка на iOS */
+  scrollbar-width: none; /* скрыть скроллбар в Firefox */
 }
 .calendar-multi::-webkit-scrollbar {
-  /* display: none; */
-  width: 0;
+  display: none; /* скрыть скроллбар в WebKit */
+}
+.calendar-single {
+  min-width: 350px; /* ширина одного слайда */
+  flex-shrink: 0;
+  scroll-snap-align: start;
+}
+.calendar-arrow:disabled {
+  opacity: 0.4;
+  cursor: default;
 }
 
-  .calendar-single {
-    min-width: 350px;
-    flex-shrink: 0;
-    /* scroll-snap-align: start; */
-  }
+
+
 
   .calendar__block h2{
     color: #36ae74;
@@ -546,10 +590,6 @@
     .calendar-arrow:hover {
       background: #36ae74;
     }
-  }
-
-  .calendar-arrow:active {
-    background: #36ae74;
   }
   
   
